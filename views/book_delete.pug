@@ -1,0 +1,12 @@
+extends layout 
+
+block content
+
+  h1 #{title}: #{book.title}
+
+  if allCopiesOfBook.length > 0
+    p #[strong You must remove all Copies of a book before removing it.]
+    ul
+      for copy in allCopiesOfBook
+        li
+          a(href=copy.url) #{copy.}

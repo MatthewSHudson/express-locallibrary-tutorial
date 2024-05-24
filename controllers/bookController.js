@@ -59,18 +59,120 @@ exports.book_detail = asyncHandler(async (req, res, next) => {
   });
 });
 
-exports.book_create_get = asyncHandler(async (req, res, next) => {});
+exports.book_create_get = asyncHandler(async (req, res, next) => {
+  // Get all authors and genres, whcih we can use for adding to our book
+  const [allAuthors, allGenres] = await Promise.all([
+    Author.find().sort({ family_name: 1 }).exec(),
+    Genre.find().sort({ name: 1 }).exec()
+  ])
 
-exports.book_create_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Book create POST");
+  res.render("book_form", {
+    title: "Create book",
+    authors: allAuthors,
+    genres: allGenres
+  })
+
 });
 
+exports.book_create_post = [
+  // Coerce genre to an array
+  (req, res, next) => {
+    if (!Array.isArray(req.body.genre)) {
+      req.body.genre = typeof req.body.genre === "undefined" ? [] : [req.body.genre]
+    }
+    next()
+  },
+
+  // Validation/Sanitization pipeline
+  body("title", "Title must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("author", "Author must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("summary", "Summary must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("isbn", "ISBN must not be empty").trim().isLength({ min: 1 }).escape(),
+  body("genre.*").escape(),
+
+  // Process Request
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request
+    const errors = validationResult(req);
+
+    const book = new Book({
+      title: req.body.title,
+      author: req.body.author,
+      summary: req.body.summary,
+      isbn: req.body.isbn,
+      genre: req.body.genre,
+    });
+
+    if (!errors.isEmpty()) {
+      // Get all authors and genres for form
+      const [allAuthors, allGenres] = await Promise.all([
+        Author.find().sort({ family_name: 1 }).exec(),
+        Genre.find().sort({ name: 1 }).exec()
+      ])
+
+      for (const genre of allGenres) {
+        if (book.genre.includes(genre._id)) {
+          genre.checked = "true"
+        }
+      }
+      res.render("book_form", {
+        title: "Create book",
+        authors: allAuthors,
+        genres: allGenres,
+        book: book,
+        errors: errors.array()
+      });
+    } else {
+      await book.save();
+      res.redirect(book.url)
+    }
+  })
+]
+
+
 exports.book_delete_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Book delete GET");
+  // Get the book to delete as well as any instances of the book
+  const [book, allCopiesOfBook] = await Promise.all([
+    Book.findById(req.params.id).exec(),
+    BookInstance.find({ book: req.params.id }).exec()
+  ])
+
+  if (book === undefined) {
+    res.redirect('/catalog/books')
+  }
+  res.render("book_delete", {
+    title: "Delete Book",
+    book: book,
+    allCopiesOfBook: allCopiesOfBook
+  })
 });
 
 exports.book_delete_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Book delete POST");
+  const [book, allCopiesOfBook] = await Promise.all([
+    Book.findById(req.params.id).exec(),
+    BookInstance.find({ book: req.params.id }).exec()
+  ]);
+
+  if (allCopiesOfBook.length > 0) {
+    // render the copies we need to delete by sending the same response as GET
+    res.render("book_delete", {
+      title: "Delete Book",
+      book: book,
+      allCopiesOfBook: allCopiesOfBook
+    })
+  } else {
+    Book.findByIdAndDelete(req.body.bookid)
+    res.redirect('/catalog/books')
+  }
 });
 
 exports.book_update_get = asyncHandler(async (req, res, next) => {
