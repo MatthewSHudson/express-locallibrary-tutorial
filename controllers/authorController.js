@@ -89,26 +89,26 @@ exports.author_delete_get = asyncHandler(async (req, res, next) => {
   // Get details of author and all the books by the requested author
   const [author, allBooksByAuthor] = await Promise.all([
     Author.findById(req.params.id).exec(),
-    Book.find({ author: req.params.id }, "title summary").exec()
-  ])
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
 
   if (author === null) {
-    res.redirect("/catalog/authors")
+    res.redirect("/catalog/authors");
   }
 
   res.render("author_delete", {
     title: "Delete Author",
     author: author,
-    author_books: allBooksByAuthor
-  })
+    author_books: allBooksByAuthor,
+  });
 });
 
 exports.author_delete_post = asyncHandler(async (req, res, next) => {
   // Get details of author and all the books by the requested author
   const [author, allBooksByAuthor] = await Promise.all([
     Author.findById(req.params.id).exec(),
-    Book.find({ author: req.params.id }, "title summary").exec()
-  ])
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
 
   if (allBooksByAuthor.length > 0) {
     // Since the author has books we will render the view the same
@@ -116,12 +116,12 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
     res.render("author_delete", {
       title: "Delete Author",
       author: author,
-      author_books: allBooksByAuthor
-    })
-    return
+      author_books: allBooksByAuthor,
+    });
+    return;
   } else {
-    await Author.findByIdAndDelete(req.body.authorid)
-    res.redirect("/catalog/authors")
+    await Author.findByIdAndDelete(req.body.authorid);
+    res.redirect("/catalog/authors");
   }
 });
 
