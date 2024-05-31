@@ -12,8 +12,8 @@ const app = express();
 
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const mongoDB =
-  "mongodb+srv://mattHudson:DP4dNl1CZpV1fMe1@locallibrary.5udpszx.mongodb.net/local_library?retryWrites=true&w=majority&appName=LocalLibrary";
+const mongoDB = process.env.DATABASE_CON_STR;
+// "mongodb+srv://mattHudson:DP4dNl1CZpV1fMe1@locallibrary.5udpszx.mongodb.net/local_library?retryWrites=true&w=majority&appName=LocalLibrary";
 
 async function main() {
   await mongoose.connect(mongoDB);

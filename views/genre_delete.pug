@@ -1,0 +1,19 @@
+extends layout
+
+block content
+  h1 #{title} #{genre.name}
+
+  if booksInGenre.length
+    p #[strong You must delete all books in this genre first!]
+      div(style='margin-left:20px;margin-top:20px;')
+        each book in BooksInGenre
+          dt 
+            a(href=book.url) #{book.title}
+          dd #{book.summary}
+  
+  else 
+    p #[strong Do you really want to delete this genre?]
+    form(method='Post')
+      div.form-group
+        input#genreid.form-control(type='hidden' name='genreid' value=genre.id)
+      button.btn.btn-primary(type='Submit') Delete

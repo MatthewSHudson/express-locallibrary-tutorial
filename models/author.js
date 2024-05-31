@@ -22,12 +22,20 @@ AuthorSchema.virtual("url").get(function () {
   return `/catalog/author/${this._id}`;
 });
 
-AuthorSchema.virtual("date_of_birth_formatted").get(function () {
-  return utils.getShortDate(this.date_of_birth);
-});
+AuthorSchema.virtual("date_of_birth_formatted")
+  .get(function () {
+    return utils.getShortDate(this.date_of_birth);
+  })
+  .set(function (val) {
+    this.date_of_birth = utils.parseDate(val);
+  });
 
-AuthorSchema.virtual("date_of_death_formatted").get(function () {
-  return utils.getShortDate(this.date_of_death);
-});
+AuthorSchema.virtual("date_of_death_formatted")
+  .get(function () {
+    return utils.getShortDate(this.date_of_death);
+  })
+  .set(function (val) {
+    this.date_of_death = utils.parseDate(val);
+  });
 
 module.exports = mongoose.model("Author", AuthorSchema);

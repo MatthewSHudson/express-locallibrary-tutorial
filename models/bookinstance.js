@@ -19,8 +19,12 @@ BookInstanceSchema.virtual("url").get(function () {
   return `/catalog/bookinstance/${this._id}`;
 });
 
-BookInstanceSchema.virtual("due_back_formatted").get(function () {
-  return utils.getShortDate(this.due_back);
-});
+BookInstanceSchema.virtual("due_back_formatted")
+  .get(function () {
+    return utils.getShortDate(this.due_back);
+  })
+  .set(function (val) {
+    this.due_back = utils.parseDate(val);
+  });
 
 module.exports = mongoose.model("BookInstance", BookInstanceSchema);
